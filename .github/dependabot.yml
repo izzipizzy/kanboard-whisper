@@ -1,0 +1,14 @@
+version: 2
+updates:
+  - package-ecosystem: pip
+    directory: /whisper-service
+    schedule:
+      interval: weekly
+  - package-ecosystem: docker
+    directory: /whisper-service
+    schedule:
+      interval: weekly
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly

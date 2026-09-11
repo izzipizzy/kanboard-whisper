@@ -1,0 +1,14 @@
+.env
+.env.*
+!.env.example
+.backups/
+dist/
+__pycache__/
+*.pyc
+.DS_Store
+*.sqlite*
+.venv/
+
+# Local audit working reports; public policy lives in SECURITY.md.
+/docs/SECURITY-REVIEW.md
+/docs/REVIEW-FOLLOWUP.md

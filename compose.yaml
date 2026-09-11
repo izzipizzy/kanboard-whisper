@@ -1,0 +1,49 @@
+name: kanboard-whisper
+services:
+  whisper:
+    build: ./whisper-service
+    restart: unless-stopped
+    environment:
+      WHISPER_MODEL: ${WHISPER_MODEL:-medium}
+      WHISPER_THREADS: ${WHISPER_THREADS:-4}
+    volumes:
+      - whisper_models:/models
+    networks: [speech]
+    mem_limit: ${WHISPER_MEMORY_LIMIT:-5g}
+    cpus: ${WHISPER_CPU_LIMIT:-2}
+    pids_limit: 256
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    healthcheck:
+      test: [CMD, python, -c, "import urllib.request; urllib.request.urlopen('http://localhost:8000/health', timeout=3)"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15m
+  bot:
+    image: ${KANBOARD_IMAGE:-kanboard/kanboard:v1.2.54}
+    restart: unless-stopped
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    pids_limit: 128
+    entrypoint: [php, /var/www/app/plugins/Whisper/bin/worker.php]
+    volumes_from:
+      - container:${KANBOARD_CONTAINER:?Set KANBOARD_CONTAINER to your running Kanboard container}
+    environment:
+      WHISPER_URL: http://whisper:8000
+    networks: [speech, kanboard]
+    depends_on:
+      whisper:
+        condition: service_healthy
+    healthcheck:
+      test: [CMD, php, -r, "exit(is_file('/var/www/app/data/whisper/heartbeat') && time() - (int)file_get_contents('/var/www/app/data/whisper/heartbeat') < 1200 ? 0 : 1);"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+networks:
+  speech:
+  kanboard:
+    external: true
+    name: ${KANBOARD_NETWORK:?Set KANBOARD_NETWORK}
+volumes:
+  whisper_models:
