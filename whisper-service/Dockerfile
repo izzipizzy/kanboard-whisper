@@ -1,4 +1,4 @@
-FROM python:3.11-slim
+FROM python:3.14-slim
 ENV PYTHONUNBUFFERED=1 HF_HUB_DISABLE_TELEMETRY=1
 WORKDIR /app
 COPY requirements.txt .
